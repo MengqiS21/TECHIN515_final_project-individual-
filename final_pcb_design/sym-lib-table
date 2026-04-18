@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "C3_GestureDriver_Screen")(type "KiCad")(uri "${KIPRJMOD}/C3_GestureDriver_Screen_Symbols/C3_GestureDriver_Screen.kicad_sym")(options "")(descr ""))
+  (lib (name "MCP1700-3302E_TO")(type "KiCad")(uri "${KIPRJMOD}/MCP1700-3302E_TO/MCP1700-3302E_TO.kicad_sym")(options "")(descr ""))
+)
