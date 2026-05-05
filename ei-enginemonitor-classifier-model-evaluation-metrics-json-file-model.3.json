@@ -1,0 +1,1293 @@
+{
+  "version": 6,
+  "validation": {
+    "int8": {
+      "confusion_matrix": [
+        [
+          175,
+          0,
+          3,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          10,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          61,
+          0,
+          27,
+          1,
+          0,
+          0
+        ],
+        [
+          19,
+          0,
+          0,
+          10,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          15,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          14
+        ]
+      ],
+      "classification_report": {
+        "0": {
+          "precision": 0.6862745098039216,
+          "recall": 0.9831460674157303,
+          "f1-score": 0.8083140877598153,
+          "support": 178
+        },
+        "1": {
+          "precision": 1,
+          "recall": 1,
+          "f1-score": 1,
+          "support": 10
+        },
+        "2": {
+          "precision": 0.9,
+          "recall": 0.30337078651685395,
+          "f1-score": 0.45378151260504207,
+          "support": 89
+        },
+        "3": {
+          "precision": 0.9090909090909091,
+          "recall": 0.3333333333333333,
+          "f1-score": 0.4878048780487804,
+          "support": 30
+        },
+        "4": {
+          "precision": 0.9375,
+          "recall": 1,
+          "f1-score": 0.967741935483871,
+          "support": 15
+        },
+        "5": {
+          "precision": 1,
+          "recall": 1,
+          "f1-score": 1,
+          "support": 14
+        },
+        "accuracy": 0.7470238095238095,
+        "macro avg": {
+          "precision": 0.9054775698158052,
+          "recall": 0.7699750312109863,
+          "f1-score": 0.7862737356495848,
+          "support": 336
+        },
+        "weighted avg": {
+          "precision": 0.7964050298149562,
+          "recall": 0.7470238095238095,
+          "f1-score": 0.7065974333833849,
+          "support": 336
+        }
+      },
+      "roc_auc": 0.9086193962644251,
+      "loss": 0.662317438700006,
+      "support": 336,
+      "weighted_average": {
+        "precision": 0.7964050298149562,
+        "recall": 0.7470238095238095,
+        "f1-score": 0.7065974333833849
+      },
+      "subgroup_metrics": {
+        "facetted": null,
+        "per_key": {
+          "class_name": {
+            "per_group": {
+              "air leak": {
+                "confusion_matrix": [
+                  [
+                    175,
+                    0,
+                    3,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                ],
+                "classification_report": {
+                  "0": {
+                    "precision": 1,
+                    "recall": 0.9831460674157303,
+                    "f1-score": 0.9915014164305949,
+                    "support": 178
+                  },
+                  "2": {
+                    "precision": 0,
+                    "recall": 0,
+                    "f1-score": 0,
+                    "support": 0
+                  },
+                  "accuracy": 0.9831460674157303,
+                  "macro avg": {
+                    "precision": 0.5,
+                    "recall": 0.49157303370786515,
+                    "f1-score": 0.49575070821529743,
+                    "support": 178
+                  },
+                  "weighted avg": {
+                    "precision": 1,
+                    "recall": 0.9831460674157303,
+                    "f1-score": 0.9915014164305949,
+                    "support": 178
+                  }
+                },
+                "roc_auc": null,
+                "loss": 0.4532751500034419,
+                "support": 178,
+                "weighted_average": {
+                  "precision": 1,
+                  "recall": 0.9831460674157303,
+                  "f1-score": 0.9915014164305949
+                }
+              },
+              "air leak engine inside cabin": {
+                "confusion_matrix": [
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    10,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                ],
+                "classification_report": {
+                  "1": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 10
+                  },
+                  "accuracy": 1,
+                  "macro avg": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 10
+                  },
+                  "weighted avg": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 10
+                  }
+                },
+                "roc_auc": null,
+                "loss": 5.440092820663281e-15,
+                "support": 10,
+                "weighted_average": {
+                  "precision": 1,
+                  "recall": 1,
+                  "f1-score": 1
+                }
+              },
+              "background noise": {
+                "confusion_matrix": [
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    61,
+                    0,
+                    27,
+                    1,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                ],
+                "classification_report": {
+                  "0": {
+                    "precision": 0,
+                    "recall": 0,
+                    "f1-score": 0,
+                    "support": 0
+                  },
+                  "2": {
+                    "precision": 1,
+                    "recall": 0.30337078651685395,
+                    "f1-score": 0.46551724137931033,
+                    "support": 89
+                  },
+                  "3": {
+                    "precision": 0,
+                    "recall": 0,
+                    "f1-score": 0,
+                    "support": 0
+                  },
+                  "accuracy": 0.30337078651685395,
+                  "macro avg": {
+                    "precision": 0.3333333333333333,
+                    "recall": 0.10112359550561799,
+                    "f1-score": 0.15517241379310345,
+                    "support": 89
+                  },
+                  "weighted avg": {
+                    "precision": 1,
+                    "recall": 0.30337078651685395,
+                    "f1-score": 0.46551724137931033,
+                    "support": 89
+                  }
+                },
+                "roc_auc": null,
+                "loss": 0.7247348799888413,
+                "support": 89,
+                "weighted_average": {
+                  "precision": 1,
+                  "recall": 0.30337078651685395,
+                  "f1-score": 0.46551724137931033
+                }
+              },
+              "idling": {
+                "confusion_matrix": [
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    19,
+                    0,
+                    0,
+                    10,
+                    1,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                ],
+                "classification_report": {
+                  "0": {
+                    "precision": 0,
+                    "recall": 0,
+                    "f1-score": 0,
+                    "support": 0
+                  },
+                  "3": {
+                    "precision": 1,
+                    "recall": 0.3333333333333333,
+                    "f1-score": 0.5,
+                    "support": 30
+                  },
+                  "4": {
+                    "precision": 0,
+                    "recall": 0,
+                    "f1-score": 0,
+                    "support": 0
+                  },
+                  "accuracy": 0.3333333333333333,
+                  "macro avg": {
+                    "precision": 0.3333333333333333,
+                    "recall": 0.1111111111111111,
+                    "f1-score": 0.16666666666666666,
+                    "support": 30
+                  },
+                  "weighted avg": {
+                    "precision": 1,
+                    "recall": 0.3333333333333333,
+                    "f1-score": 0.5,
+                    "support": 30
+                  }
+                },
+                "roc_auc": null,
+                "loss": 2.5622611511863855,
+                "support": 30,
+                "weighted_average": {
+                  "precision": 1,
+                  "recall": 0.3333333333333333,
+                  "f1-score": 0.5
+                }
+              },
+              "normal engine inside cabin": {
+                "confusion_matrix": [
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    15,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                ],
+                "classification_report": {
+                  "4": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 15
+                  },
+                  "accuracy": 1,
+                  "macro avg": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 15
+                  },
+                  "weighted avg": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 15
+                  }
+                },
+                "roc_auc": null,
+                "loss": 0.00026092662141424117,
+                "support": 15,
+                "weighted_average": {
+                  "precision": 1,
+                  "recall": 1,
+                  "f1-score": 1
+                }
+              },
+              "oil cap off engine inside cabin": {
+                "confusion_matrix": [
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    14
+                  ]
+                ],
+                "classification_report": {
+                  "5": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 14
+                  },
+                  "accuracy": 1,
+                  "macro avg": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 14
+                  },
+                  "weighted avg": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 14
+                  }
+                },
+                "roc_auc": null,
+                "loss": 0.03446642490497325,
+                "support": 14,
+                "weighted_average": {
+                  "precision": 1,
+                  "recall": 1,
+                  "f1-score": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      "class_names": [
+        "air leak",
+        "air leak engine inside cabin",
+        "background noise",
+        "idling",
+        "normal engine inside cabin",
+        "oil cap off engine inside cabin"
+      ]
+    },
+    "float32": {
+      "confusion_matrix": [
+        [
+          175,
+          0,
+          3,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          10,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          61,
+          0,
+          27,
+          1,
+          0,
+          0
+        ],
+        [
+          19,
+          0,
+          0,
+          10,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          15,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          14
+        ]
+      ],
+      "classification_report": {
+        "0": {
+          "precision": 0.6862745098039216,
+          "recall": 0.9831460674157303,
+          "f1-score": 0.8083140877598153,
+          "support": 178
+        },
+        "1": {
+          "precision": 1,
+          "recall": 1,
+          "f1-score": 1,
+          "support": 10
+        },
+        "2": {
+          "precision": 0.9,
+          "recall": 0.30337078651685395,
+          "f1-score": 0.45378151260504207,
+          "support": 89
+        },
+        "3": {
+          "precision": 0.9090909090909091,
+          "recall": 0.3333333333333333,
+          "f1-score": 0.4878048780487804,
+          "support": 30
+        },
+        "4": {
+          "precision": 0.9375,
+          "recall": 1,
+          "f1-score": 0.967741935483871,
+          "support": 15
+        },
+        "5": {
+          "precision": 1,
+          "recall": 1,
+          "f1-score": 1,
+          "support": 14
+        },
+        "accuracy": 0.7470238095238095,
+        "macro avg": {
+          "precision": 0.9054775698158052,
+          "recall": 0.7699750312109863,
+          "f1-score": 0.7862737356495848,
+          "support": 336
+        },
+        "weighted avg": {
+          "precision": 0.7964050298149562,
+          "recall": 0.7470238095238095,
+          "f1-score": 0.7065974333833849,
+          "support": 336
+        }
+      },
+      "roc_auc": 0.9232046145553943,
+      "loss": 0.5851251109442246,
+      "support": 336,
+      "weighted_average": {
+        "precision": 0.7964050298149562,
+        "recall": 0.7470238095238095,
+        "f1-score": 0.7065974333833849
+      },
+      "subgroup_metrics": {
+        "facetted": null,
+        "per_key": {
+          "class_name": {
+            "per_group": {
+              "air leak": {
+                "confusion_matrix": [
+                  [
+                    175,
+                    0,
+                    3,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                ],
+                "classification_report": {
+                  "0": {
+                    "precision": 1,
+                    "recall": 0.9831460674157303,
+                    "f1-score": 0.9915014164305949,
+                    "support": 178
+                  },
+                  "2": {
+                    "precision": 0,
+                    "recall": 0,
+                    "f1-score": 0,
+                    "support": 0
+                  },
+                  "accuracy": 0.9831460674157303,
+                  "macro avg": {
+                    "precision": 0.5,
+                    "recall": 0.49157303370786515,
+                    "f1-score": 0.49575070821529743,
+                    "support": 178
+                  },
+                  "weighted avg": {
+                    "precision": 1,
+                    "recall": 0.9831460674157303,
+                    "f1-score": 0.9915014164305949,
+                    "support": 178
+                  }
+                },
+                "roc_auc": null,
+                "loss": 0.4860726320142989,
+                "support": 178,
+                "weighted_average": {
+                  "precision": 1,
+                  "recall": 0.9831460674157303,
+                  "f1-score": 0.9915014164305949
+                }
+              },
+              "air leak engine inside cabin": {
+                "confusion_matrix": [
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    10,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                ],
+                "classification_report": {
+                  "1": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 10
+                  },
+                  "accuracy": 1,
+                  "macro avg": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 10
+                  },
+                  "weighted avg": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 10
+                  }
+                },
+                "roc_auc": null,
+                "loss": 0.0002343116328341071,
+                "support": 10,
+                "weighted_average": {
+                  "precision": 1,
+                  "recall": 1,
+                  "f1-score": 1
+                }
+              },
+              "background noise": {
+                "confusion_matrix": [
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    61,
+                    0,
+                    27,
+                    1,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                ],
+                "classification_report": {
+                  "0": {
+                    "precision": 0,
+                    "recall": 0,
+                    "f1-score": 0,
+                    "support": 0
+                  },
+                  "2": {
+                    "precision": 1,
+                    "recall": 0.30337078651685395,
+                    "f1-score": 0.46551724137931033,
+                    "support": 89
+                  },
+                  "3": {
+                    "precision": 0,
+                    "recall": 0,
+                    "f1-score": 0,
+                    "support": 0
+                  },
+                  "accuracy": 0.30337078651685395,
+                  "macro avg": {
+                    "precision": 0.3333333333333333,
+                    "recall": 0.10112359550561799,
+                    "f1-score": 0.15517241379310345,
+                    "support": 89
+                  },
+                  "weighted avg": {
+                    "precision": 1,
+                    "recall": 0.30337078651685395,
+                    "f1-score": 0.46551724137931033,
+                    "support": 89
+                  }
+                },
+                "roc_auc": null,
+                "loss": 0.6993194968396657,
+                "support": 89,
+                "weighted_average": {
+                  "precision": 1,
+                  "recall": 0.30337078651685395,
+                  "f1-score": 0.46551724137931033
+                }
+              },
+              "idling": {
+                "confusion_matrix": [
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    19,
+                    0,
+                    0,
+                    10,
+                    1,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                ],
+                "classification_report": {
+                  "0": {
+                    "precision": 0,
+                    "recall": 0,
+                    "f1-score": 0,
+                    "support": 0
+                  },
+                  "3": {
+                    "precision": 1,
+                    "recall": 0.3333333333333333,
+                    "f1-score": 0.5,
+                    "support": 30
+                  },
+                  "4": {
+                    "precision": 0,
+                    "recall": 0,
+                    "f1-score": 0,
+                    "support": 0
+                  },
+                  "accuracy": 0.3333333333333333,
+                  "macro avg": {
+                    "precision": 0.3333333333333333,
+                    "recall": 0.1111111111111111,
+                    "f1-score": 0.16666666666666666,
+                    "support": 30
+                  },
+                  "weighted avg": {
+                    "precision": 1,
+                    "recall": 0.3333333333333333,
+                    "f1-score": 0.5,
+                    "support": 30
+                  }
+                },
+                "roc_auc": null,
+                "loss": 1.5776389605574146,
+                "support": 30,
+                "weighted_average": {
+                  "precision": 1,
+                  "recall": 0.3333333333333333,
+                  "f1-score": 0.5
+                }
+              },
+              "normal engine inside cabin": {
+                "confusion_matrix": [
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    15,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                ],
+                "classification_report": {
+                  "4": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 15
+                  },
+                  "accuracy": 1,
+                  "macro avg": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 15
+                  },
+                  "weighted avg": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 15
+                  }
+                },
+                "roc_auc": null,
+                "loss": 0.0003941125010767701,
+                "support": 15,
+                "weighted_average": {
+                  "precision": 1,
+                  "recall": 1,
+                  "f1-score": 1
+                }
+              },
+              "oil cap off engine inside cabin": {
+                "confusion_matrix": [
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    14
+                  ]
+                ],
+                "classification_report": {
+                  "5": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 14
+                  },
+                  "accuracy": 1,
+                  "macro avg": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 14
+                  },
+                  "weighted avg": {
+                    "precision": 1,
+                    "recall": 1,
+                    "f1-score": 1,
+                    "support": 14
+                  }
+                },
+                "roc_auc": null,
+                "loss": 0.036017852815506506,
+                "support": 14,
+                "weighted_average": {
+                  "precision": 1,
+                  "recall": 1,
+                  "f1-score": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      "class_names": [
+        "air leak",
+        "air leak engine inside cabin",
+        "background noise",
+        "idling",
+        "normal engine inside cabin",
+        "oil cap off engine inside cabin"
+      ]
+    }
+  }
+}
