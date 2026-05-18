@@ -9,7 +9,7 @@
 // ─── Pin definitions ─────────────────────────────────────────────
 #define SDA_PIN      5    // D4 -> OLED SDA
 #define SCL_PIN      6    // D5 -> OLED SCL
-#define LED_PIN      11   // D10 -> fault indicator LED
+#define LED_PIN      9    // D10 -> fault indicator LED
 
 // XIAO ESP32S3 Sense built-in PDM microphone
 #define I2S_MIC_CLK  GPIO_NUM_42
