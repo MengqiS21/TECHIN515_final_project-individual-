@@ -4,7 +4,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include "driver/i2s.h"
+#include "driver/i2s_pdm.h"
 
 // ─── Pin definitions ─────────────────────────────────────────────
 #define SDA_PIN      5    // D4 -> OLED SDA
@@ -32,14 +32,20 @@ typedef struct {
 static inference_t inference;
 static bool        record_running = false;
 static int16_t     i2s_read_buf[512];
+static i2s_chan_handle_t rx_chan = NULL;
 
-// ─── I2S capture task (runs continuously on its own thread) ──────
+// ─── I2S capture task ────────────────────────────────────────────
 static void i2s_capture_task(void *arg) {
     size_t bytes_read;
+    uint32_t loop_count = 0;
     while (record_running) {
-        i2s_read(I2S_NUM_0, i2s_read_buf, sizeof(i2s_read_buf), &bytes_read, portMAX_DELAY);
+        i2s_channel_read(rx_chan, i2s_read_buf, sizeof(i2s_read_buf), &bytes_read, 100);
+        if (loop_count++ % 50 == 0) {
+            Serial.printf("[MIC] bytes_read=%d buf_count=%d\n", bytes_read, inference.buf_count);
+        }
         int samples = bytes_read / 2;
         for (int i = 0; i < samples; i++) {
+            i2s_read_buf[i] = (int16_t)(i2s_read_buf[i]) * 8;
             inference.buffer[inference.buf_count++] = i2s_read_buf[i];
             if (inference.buf_count >= inference.n_samples) {
                 inference.buf_count = 0;
@@ -50,7 +56,7 @@ static void i2s_capture_task(void *arg) {
     vTaskDelete(NULL);
 }
 
-// ─── Microphone initialization ───────────────────────────────────
+// ─── Microphone initialization (IDF 5.x PDM API) ─────────────────
 static bool mic_init(uint32_t n_samples) {
     inference.buffer = (int16_t *)malloc(n_samples * sizeof(int16_t));
     if (!inference.buffer) {
@@ -61,26 +67,33 @@ static bool mic_init(uint32_t n_samples) {
     inference.n_samples = n_samples;
     inference.buf_ready = 0;
 
-    i2s_config_t cfg = {
-        .mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM),
-        .sample_rate          = EI_CLASSIFIER_FREQUENCY,
-        .bits_per_sample      = I2S_BITS_PER_SAMPLE_16BIT,
-        .channel_format       = I2S_CHANNEL_FMT_ONLY_LEFT,
-        .communication_format = I2S_COMM_FORMAT_STAND_PCM_SHORT,
-        .intr_alloc_flags     = 0,
-        .dma_buf_count        = 8,
-        .dma_buf_len          = 512,
-        .use_apll             = false,
-    };
-    i2s_pin_config_t pins = {
-        .bck_io_num   = I2S_PIN_NO_CHANGE,
-        .ws_io_num    = I2S_MIC_CLK,
-        .data_out_num = I2S_PIN_NO_CHANGE,
-        .data_in_num  = I2S_MIC_DATA,
+    i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
+    if (i2s_new_channel(&chan_cfg, NULL, &rx_chan) != ESP_OK) {
+        Serial.println("ERROR: i2s_new_channel failed");
+        return false;
+    }
+
+    i2s_pdm_rx_config_t pdm_rx_cfg = {
+        .clk_cfg  = I2S_PDM_RX_CLK_DEFAULT_CONFIG(EI_CLASSIFIER_FREQUENCY),
+        .slot_cfg = I2S_PDM_RX_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO),
+        .gpio_cfg = {
+            .clk = I2S_MIC_CLK,
+            .din = I2S_MIC_DATA,
+            .invert_flags = {
+                .clk_inv = false,
+            },
+        },
     };
 
-    if (i2s_driver_install(I2S_NUM_0, &cfg, 0, NULL) != ESP_OK) return false;
-    if (i2s_set_pin(I2S_NUM_0, &pins)               != ESP_OK) return false;
+    if (i2s_channel_init_pdm_rx_mode(rx_chan, &pdm_rx_cfg) != ESP_OK) {
+        Serial.println("ERROR: i2s_channel_init_pdm_rx_mode failed");
+        return false;
+    }
+
+    if (i2s_channel_enable(rx_chan) != ESP_OK) {
+        Serial.println("ERROR: i2s_channel_enable failed");
+        return false;
+    }
 
     record_running = true;
     xTaskCreate(i2s_capture_task, "mic_task", 1024 * 32, NULL, 10, NULL);
@@ -115,31 +128,26 @@ void showResult(const char *label, float confidence) {
         shortLabel = "STANDBY";
     }
 
-    // LED on when fault detected
     digitalWrite(LED_PIN, isFault ? HIGH : LOW);
 
     display.clearDisplay();
     display.setTextColor(SSD1306_WHITE);
 
-    // Title bar
     display.setTextSize(1);
     display.setCursor(0, 0);
     display.println("  Engine Monitor");
     display.drawLine(0, 9, 127, 9, SSD1306_WHITE);
 
-    // Large status text
     display.setTextSize(2);
     display.setCursor(isFault ? 4 : 16, 13);
     display.println(shortLabel);
 
     display.drawLine(0, 34, 127, 34, SSD1306_WHITE);
 
-    // Raw label (small text)
     display.setTextSize(1);
     display.setCursor(0, 37);
     display.println(label);
 
-    // Confidence score
     display.setCursor(0, 52);
     display.print("Conf: ");
     display.print((int)(confidence * 100));
@@ -158,12 +166,10 @@ void setup() {
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, LOW);
 
-    // Initialize I2C with specified pins
     Wire.begin(SDA_PIN, SCL_PIN);
 
-    // Initialize OLED
     if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {
-        Serial.println("ERROR: OLED init failed, check wiring and I2C address");
+        Serial.println("ERROR: OLED init failed");
         while (true) delay(1000);
     }
     display.clearDisplay();
@@ -175,7 +181,6 @@ void setup() {
     display.println("Starting...");
     display.display();
 
-    // Initialize microphone
     Serial.println("Initializing microphone...");
     if (!mic_init(EI_CLASSIFIER_RAW_SAMPLE_COUNT)) {
         display.clearDisplay();
@@ -191,16 +196,15 @@ void setup() {
 
 // ─── loop ────────────────────────────────────────────────────────
 void loop() {
-    // Wait for a full audio frame
+    static unsigned long holdUntil = 0;
+
     while (inference.buf_ready == 0) delay(5);
     inference.buf_ready = 0;
 
-    // Build EI signal
     signal_t signal;
     signal.total_length = EI_CLASSIFIER_RAW_SAMPLE_COUNT;
     signal.get_data     = &audio_signal_get_data;
 
-    // Run inference
     ei_impulse_result_t result = {0};
     EI_IMPULSE_ERROR err = run_classifier(&signal, &result, false);
     if (err != EI_IMPULSE_OK) {
@@ -208,7 +212,6 @@ void loop() {
         return;
     }
 
-    // Find highest confidence label
     int   best_idx = 0;
     float best_val = 0.0f;
     for (uint16_t i = 0; i < EI_CLASSIFIER_LABEL_COUNT; i++) {
@@ -218,11 +221,14 @@ void loop() {
         }
     }
 
-    // Skip if confidence too low to avoid false positives
     if (best_val < 0.65f) {
         Serial.println("Low confidence, skipping frame");
         return;
     }
+
+    // Hold display for 3 seconds before updating
+    if (millis() < holdUntil) return;
+    holdUntil = millis() + 3000;
 
     showResult(ei_classifier_inferencing_categories[best_idx], best_val);
 }
