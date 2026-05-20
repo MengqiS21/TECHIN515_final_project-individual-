@@ -1,5 +1,5 @@
 #define EIDSP_QUANTIZE_FILTERBANK 0
-#include <EngineMonitor_inferencing.h>
+#include <EngineMonitorUpdate_inferencing.h>
 
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -7,13 +7,17 @@
 #include "driver/i2s_pdm.h"
 
 // ─── Pin definitions ─────────────────────────────────────────────
-#define SDA_PIN      5    // D4 -> OLED SDA
-#define SCL_PIN      6    // D5 -> OLED SCL
-#define LED_PIN      9    // D10 -> fault indicator LED
+#define SDA_PIN      5
+#define SCL_PIN      6
+#define LED_PIN      9
 
-// XIAO ESP32S3 Sense built-in PDM microphone
 #define I2S_MIC_CLK  GPIO_NUM_42
 #define I2S_MIC_DATA GPIO_NUM_41
+
+// ─── Tunable parameters ──────────────────────────────────────────
+#define RMS_THRESHOLD   0.0f      // disabled for diagnostics
+#define CONF_THRESHOLD  0.75f     // minimum confidence to accept result
+#define CONFIRM_NEEDED  1         // frames needed to confirm detection
 
 // ─── OLED ────────────────────────────────────────────────────────
 #define SCREEN_WIDTH  128
@@ -29,23 +33,29 @@ typedef struct {
     uint32_t         n_samples;
 } inference_t;
 
-static inference_t inference;
-static bool        record_running = false;
-static int16_t     i2s_read_buf[512];
+static inference_t   inference;
+static bool          record_running = false;
+static int16_t       i2s_read_buf[512];
 static i2s_chan_handle_t rx_chan = NULL;
+
+// ─── RMS of current audio frame ──────────────────────────────────
+float computeRMS() {
+    float sum = 0.0f;
+    for (uint32_t i = 0; i < inference.n_samples; i++) {
+        float s = (float)inference.buffer[i];
+        sum += s * s;
+    }
+    return sqrtf(sum / inference.n_samples);
+}
 
 // ─── I2S capture task ────────────────────────────────────────────
 static void i2s_capture_task(void *arg) {
     size_t bytes_read;
-    uint32_t loop_count = 0;
     while (record_running) {
         i2s_channel_read(rx_chan, i2s_read_buf, sizeof(i2s_read_buf), &bytes_read, 100);
-        if (loop_count++ % 50 == 0) {
-            Serial.printf("[MIC] bytes_read=%d buf_count=%d\n", bytes_read, inference.buf_count);
-        }
         int samples = bytes_read / 2;
         for (int i = 0; i < samples; i++) {
-            i2s_read_buf[i] = (int16_t)(i2s_read_buf[i]) * 8;
+            i2s_read_buf[i] = i2s_read_buf[i]; // no amplification
             inference.buffer[inference.buf_count++] = i2s_read_buf[i];
             if (inference.buf_count >= inference.n_samples) {
                 inference.buf_count = 0;
@@ -56,22 +66,16 @@ static void i2s_capture_task(void *arg) {
     vTaskDelete(NULL);
 }
 
-// ─── Microphone initialization (IDF 5.x PDM API) ─────────────────
+// ─── Microphone init ─────────────────────────────────────────────
 static bool mic_init(uint32_t n_samples) {
     inference.buffer = (int16_t *)malloc(n_samples * sizeof(int16_t));
-    if (!inference.buffer) {
-        Serial.println("ERROR: not enough memory for audio buffer");
-        return false;
-    }
+    if (!inference.buffer) return false;
     inference.buf_count = 0;
     inference.n_samples = n_samples;
     inference.buf_ready = 0;
 
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
-    if (i2s_new_channel(&chan_cfg, NULL, &rx_chan) != ESP_OK) {
-        Serial.println("ERROR: i2s_new_channel failed");
-        return false;
-    }
+    if (i2s_new_channel(&chan_cfg, NULL, &rx_chan) != ESP_OK) return false;
 
     i2s_pdm_rx_config_t pdm_rx_cfg = {
         .clk_cfg  = I2S_PDM_RX_CLK_DEFAULT_CONFIG(EI_CLASSIFIER_FREQUENCY),
@@ -79,82 +83,150 @@ static bool mic_init(uint32_t n_samples) {
         .gpio_cfg = {
             .clk = I2S_MIC_CLK,
             .din = I2S_MIC_DATA,
-            .invert_flags = {
-                .clk_inv = false,
-            },
+            .invert_flags = { .clk_inv = false },
         },
     };
-
-    if (i2s_channel_init_pdm_rx_mode(rx_chan, &pdm_rx_cfg) != ESP_OK) {
-        Serial.println("ERROR: i2s_channel_init_pdm_rx_mode failed");
-        return false;
-    }
-
-    if (i2s_channel_enable(rx_chan) != ESP_OK) {
-        Serial.println("ERROR: i2s_channel_enable failed");
-        return false;
-    }
+    if (i2s_channel_init_pdm_rx_mode(rx_chan, &pdm_rx_cfg) != ESP_OK) return false;
+    if (i2s_channel_enable(rx_chan) != ESP_OK) return false;
 
     record_running = true;
     xTaskCreate(i2s_capture_task, "mic_task", 1024 * 32, NULL, 10, NULL);
     return true;
 }
 
-// ─── Edge Impulse audio signal callback ──────────────────────────
+// ─── EI audio callback ───────────────────────────────────────────
 static int audio_signal_get_data(size_t offset, size_t length, float *out) {
     numpy::int16_to_float(&inference.buffer[offset], out, length);
     return 0;
 }
 
-// ─── OLED display ────────────────────────────────────────────────
+// ─── OLED helpers ────────────────────────────────────────────────
+void drawTitleBar() {
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(22, 2);
+    display.println("Engine Monitor");
+    display.drawLine(0, 11, 127, 11, SSD1306_WHITE);
+}
+
+// ─── Animated sound bars (bottom center) ─────────────────────────
+// Traveling wave pattern, 8 frames
+static const int8_t SOUND_BARS[8][4] = {
+    { 8,  5,  4,  5},
+    {11,  8,  5,  4},
+    {12, 11,  8,  5},
+    {11, 12, 11,  8},
+    { 8, 11, 12, 11},
+    { 5,  8, 11, 12},
+    { 4,  5,  8, 11},
+    { 5,  4,  5,  8},
+};
+
+void drawSoundBars(uint8_t frame) {
+    const int barW    = 5;
+    const int barGap  = 4;
+    const int barN    = 4;
+    const int baseY   = 62;
+    const int startX  = (128 - (barN * barW + (barN - 1) * barGap)) / 2; // centered
+
+    // clear bar zone
+    display.fillRect(startX - 1, baseY - 13, barN * (barW + barGap) + 1, 15, SSD1306_BLACK);
+
+    for (int i = 0; i < barN; i++) {
+        int h = SOUND_BARS[frame % 8][i];
+        int x = startX + i * (barW + barGap);
+        display.fillRect(x, baseY - h + 1, barW, h, SSD1306_WHITE);
+        // small rounded cap on top
+        display.drawPixel(x,         baseY - h,     SSD1306_WHITE);
+        display.drawPixel(x + barW - 1, baseY - h,  SSD1306_WHITE);
+    }
+}
+
+// ─── Wrench icon bitmap (16x16) ──────────────────────────────────
+static const unsigned char WRENCH_ICON[] PROGMEM = {
+    0x00, 0x00, 0x00, 0x00, 0x30, 0x00, 0x1c, 0x00,
+    0x0e, 0x00, 0x8e, 0x00, 0xde, 0x00, 0xff, 0x00,
+    0x7f, 0x80, 0x07, 0xc0, 0x03, 0xe0, 0x01, 0xe0,
+    0x00, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
+// horizontally mirrored version of WRENCH_ICON
+static const unsigned char WRENCH_ICON_FLIP[] PROGMEM = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x38,
+    0x00, 0x70, 0x00, 0x71, 0x00, 0x7b, 0x00, 0xff,
+    0x01, 0xfe, 0x03, 0xe0, 0x07, 0xc0, 0x07, 0x80,
+    0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
+void drawWrench(int x, int y) {
+    display.drawBitmap(x, y, WRENCH_ICON, 16, 16, SSD1306_WHITE);
+}
+
+void drawWrenchFlip(int x, int y) {
+    display.drawBitmap(x, y, WRENCH_ICON_FLIP, 16, 16, SSD1306_WHITE);
+}
+
+// ─── Opening / home page ─────────────────────────────────────────
+void showHome() {
+    display.clearDisplay();
+    drawTitleBar();
+
+    drawWrenchFlip(2, 46);
+    drawWrench(110, 46);
+
+    // Main label (centered: 7 chars * 12px = 84px, x = (128-84)/2 = 22)
+    display.setTextSize(2);
+    display.setCursor(22, 17);
+    display.println("AI MECH");
+
+    // Subtitle (centered: 15 chars * 6px = 90px, x = (128-90)/2 = 19)
+    display.setTextSize(1);
+    display.setCursor(19, 37);
+    display.println("Sound Detection");
+
+    // Sound bars drawn on first call with frame 0
+    drawSoundBars(0);
+
+    display.display();
+    digitalWrite(LED_PIN, LOW);
+}
+
 void showResult(const char *label, float confidence) {
     String l = String(label);
-    l.toLowerCase();
+    l.toUpperCase();
 
     bool   isFault = false;
-    String shortLabel;
+    String bigText, subText;
 
-    if (l.indexOf("air leak") >= 0) {
-        isFault    = true;
-        shortLabel = "AIR LEAK!";
-    } else if (l.indexOf("oil cap") >= 0) {
-        isFault    = true;
-        shortLabel = "OIL CAP OFF";
-    } else if (l.indexOf("normal") >= 0 || l.indexOf("idling") >= 0) {
-        isFault    = false;
-        shortLabel = "NORMAL";
+    if (l.indexOf("ENGINE_ISSUE") >= 0) {
+        isFault = true;  bigText = "ENGINE";   subText = "Engine fault detected";
+    } else if (l.indexOf("IGNITION") >= 0) {
+        isFault = true;  bigText = "IGNITION"; subText = "Ignition issue";
+    } else if (l.indexOf("NORMAL") >= 0 || l.indexOf("STRATUP") >= 0) {
+        isFault = false; bigText = "NORMAL";   subText = "Engine OK";
     } else {
-        isFault    = false;
-        shortLabel = "STANDBY";
+        isFault = false; bigText = "UNKNOWN";  subText = String(label);
     }
 
     digitalWrite(LED_PIN, isFault ? HIGH : LOW);
 
     display.clearDisplay();
-    display.setTextColor(SSD1306_WHITE);
+    drawTitleBar();
 
-    display.setTextSize(1);
-    display.setCursor(0, 0);
-    display.println("  Engine Monitor");
-    display.drawLine(0, 9, 127, 9, SSD1306_WHITE);
-
+    int16_t x = (128 - (int16_t)(bigText.length() * 12)) / 2;
     display.setTextSize(2);
-    display.setCursor(isFault ? 4 : 16, 13);
-    display.println(shortLabel);
-
-    display.drawLine(0, 34, 127, 34, SSD1306_WHITE);
+    display.setCursor(max((int16_t)0, x), 17);
+    display.println(bigText);
 
     display.setTextSize(1);
-    display.setCursor(0, 37);
-    display.println(label);
-
+    display.setCursor(0, 38);
+    display.println(subText);
     display.setCursor(0, 52);
     display.print("Conf: ");
     display.print((int)(confidence * 100));
     display.println("%");
 
     display.display();
-
     Serial.printf("[Result] %s  %.1f%%\n", label, confidence * 100);
 }
 
@@ -165,13 +237,13 @@ void setup() {
 
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, LOW);
-
     Wire.begin(SDA_PIN, SCL_PIN);
 
     if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {
         Serial.println("ERROR: OLED init failed");
         while (true) delay(1000);
     }
+
     display.clearDisplay();
     display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);
@@ -190,27 +262,52 @@ void setup() {
         while (true) delay(1000);
     }
 
-    Serial.println("Ready, listening...");
+    Serial.println("Ready.");
     delay(500);
+    showHome();
 }
 
 // ─── loop ────────────────────────────────────────────────────────
 void loop() {
-    static unsigned long holdUntil = 0;
+    static unsigned long holdUntil    = 0;
+    static bool          idleShown    = false;
+    static int           confirmCount  = 0;
+    static int           confirmIdx    = -1;
+    static uint8_t       animFrame     = 0;
 
     while (inference.buf_ready == 0) delay(5);
     inference.buf_ready = 0;
 
+    // ── Return to home page once hold expires ────────────────────
+    if (millis() >= holdUntil && !idleShown) {
+        showHome();
+        idleShown    = true;
+        animFrame    = 0;
+        confirmCount = 0;
+        confirmIdx   = -1;
+    }
+
+    // ── Animate sound bars while on home page ─────────────────────
+    if (idleShown) {
+        drawSoundBars(animFrame++);
+        display.display();
+    }
+
+    // ── Volume gate: skip inference if too quiet ──────────────────
+    float rms = computeRMS();
+    Serial.printf("[RMS] %.0f\n", rms);
+
+    if (rms < RMS_THRESHOLD) {
+        return;
+    }
+
+    // ── Run inference ─────────────────────────────────────────────
     signal_t signal;
     signal.total_length = EI_CLASSIFIER_RAW_SAMPLE_COUNT;
     signal.get_data     = &audio_signal_get_data;
 
     ei_impulse_result_t result = {0};
-    EI_IMPULSE_ERROR err = run_classifier(&signal, &result, false);
-    if (err != EI_IMPULSE_OK) {
-        Serial.printf("Inference error: %d\n", err);
-        return;
-    }
+    if (run_classifier(&signal, &result, false) != EI_IMPULSE_OK) return;
 
     int   best_idx = 0;
     float best_val = 0.0f;
@@ -221,14 +318,30 @@ void loop() {
         }
     }
 
-    if (best_val < 0.65f) {
-        Serial.println("Low confidence, skipping frame");
+    Serial.printf("[Infer] %s  %.1f%%\n",
+                  ei_classifier_inferencing_categories[best_idx], best_val * 100);
+
+    // ── Confidence gate ───────────────────────────────────────────
+    if (best_val < CONF_THRESHOLD) {
+        confirmCount = 0;
+        confirmIdx   = -1;
         return;
     }
 
-    // Hold display for 3 seconds before updating
-    if (millis() < holdUntil) return;
-    holdUntil = millis() + 3000;
+    // ── Consecutive-frame confirmation ────────────────────────────
+    if (best_idx == confirmIdx) {
+        confirmCount++;
+    } else {
+        confirmIdx   = best_idx;
+        confirmCount = 1;
+    }
+    Serial.printf("[Confirm] %d/%d\n", confirmCount, CONFIRM_NEEDED);
 
+    if (confirmCount < CONFIRM_NEEDED) return;
+    if (millis() < holdUntil) return;
+
+    confirmCount = 0;
+    holdUntil    = millis() + 5000;
+    idleShown    = false;
     showResult(ei_classifier_inferencing_categories[best_idx], best_val);
 }
